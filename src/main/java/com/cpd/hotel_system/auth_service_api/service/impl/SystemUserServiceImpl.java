@@ -8,6 +8,7 @@ import com.cpd.hotel_system.auth_service_api.entity.SystemUser;
 import com.cpd.hotel_system.auth_service_api.exception.DuplicateEntryException;
 import com.cpd.hotel_system.auth_service_api.repo.OtpRepo;
 import com.cpd.hotel_system.auth_service_api.repo.SystemUserRepo;
+import com.cpd.hotel_system.auth_service_api.service.EmailService;
 import com.cpd.hotel_system.auth_service_api.service.SystemUserService;
 import com.cpd.hotel_system.auth_service_api.util.OtpGenerator;
 import jakarta.ws.rs.core.Response;
@@ -20,6 +21,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 
@@ -34,11 +36,12 @@ public class SystemUserServiceImpl implements SystemUserService {
     private final OtpRepo    otpRepo;
     private final KeycloakSecurityUtil keycloakUtil;
     private final OtpGenerator otpGenerator;
+    private final EmailService emailService;
 
 
 
     @Override
-    public void createUser(SystemUserRequestDto dto) {
+    public void createUser(SystemUserRequestDto dto) throws IOException {
       if (dto.getFirstName() == null || dto.getFirstName().trim().isEmpty()){
           throw  new BadRequestException("First name is required");
       }
@@ -122,6 +125,7 @@ public class SystemUserServiceImpl implements SystemUserService {
                     .build();
 
             otpRepo.save(creatdOtp);
+            emailService.sendUserSignupVerficationCode(dto.getEmail(),"Verify your email",creatdOtp.getCode(),dto.getFirstName());
             // send email
 
 
