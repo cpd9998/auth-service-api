@@ -12,10 +12,13 @@ import com.cpd.hotel_system.auth_service_api.service.SystemUserService;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 
+import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -79,9 +82,24 @@ public class SystemUserServiceImpl implements SystemUserService {
         }
 
 
+        //
 
-
-
+    }
+    private  UserRepresentation mapUserRepo(SystemUserRequestDto dto ){
+        UserRepresentation user = new UserRepresentation();
+        user.setEmail(dto.getEmail());
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setUsername(dto.getEmail());
+        user.setEnabled(false);
+        user.setEmailVerified(false);
+        List<CredentialRepresentation> credList = new ArrayList<>();
+        CredentialRepresentation cred = new CredentialRepresentation();
+        cred.setTemporary(false);
+        cred.setValue(dto.getPassword());
+        credList.add(cred);
+        user.setCredentials(credList);
+        return user;
 
     }
 }
