@@ -1,18 +1,35 @@
 package com.cpd.hotel_system.auth_service_api.service.impl;
 
-import com.cpd.hotel_system.auth_service_api.BadRequestException;
+import com.cpd.hotel_system.auth_service_api.entity.Otp;
+import com.cpd.hotel_system.auth_service_api.exception.BadRequestException;
+import com.cpd.hotel_system.auth_service_api.config.KeycloakSecurityUtil;
 import com.cpd.hotel_system.auth_service_api.dto.request.SystemUserRequestDto;
+import com.cpd.hotel_system.auth_service_api.entity.SystemUser;
+import com.cpd.hotel_system.auth_service_api.exception.DuplicateEntryException;
+import com.cpd.hotel_system.auth_service_api.repo.OtpRepo;
 import com.cpd.hotel_system.auth_service_api.repo.SystemUserRepo;
 import com.cpd.hotel_system.auth_service_api.service.SystemUserService;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
+
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class SystemUserServiceImpl implements SystemUserService {
 
+    @Value("${keycloak.config.realm}")
+    private String realm;
+
     private final SystemUserRepo systemUserRepo;
+    private final OtpRepo    otpRepo;
+    private final KeycloakSecurityUtil keycloakUtil;
+
+
 
     @Override
     public void createUser(SystemUserRequestDto dto) {
@@ -31,6 +48,37 @@ public class SystemUserServiceImpl implements SystemUserService {
         String userId = "";
         String otp = "";
         Keycloak keycloak =  null;
+
+        UserRepresentation exsistingUser = null;
+        keycloak = keycloakUtil.getKeycloakInstance();
+
+        exsistingUser =keycloak.realm(realm).users().search(dto.getEmail()).stream()
+                .findFirst().orElse(null);
+
+        if(exsistingUser != null){
+            Optional<SystemUser> selectedSystemUserFromAuthService = systemUserRepo.findByEmail(dto.getEmail());
+
+            if(selectedSystemUserFromAuthService.isEmpty()){
+              keycloak.realm(realm).users().delete(exsistingUser.getId());
+            }else{
+                throw new DuplicateEntryException("Email already exists");
+            }
+        }else{
+            Optional<SystemUser> selectedSystemUserFromAuthService = systemUserRepo.findByEmail(dto.getEmail());
+            if(selectedSystemUserFromAuthService.isPresent()){
+                Optional<Otp> selectedOtp = otpRepo.findBySystemUserId(selectedSystemUserFromAuthService.get().getUserId());
+
+                if(selectedOtp.isPresent()){
+               otpRepo.deleteById(selectedOtp.get().getPropertyId());
+                }
+
+                systemUserRepo.deleteById(selectedSystemUserFromAuthService.get().getUserId());
+
+            }
+        }
+
+
+
 
 
 

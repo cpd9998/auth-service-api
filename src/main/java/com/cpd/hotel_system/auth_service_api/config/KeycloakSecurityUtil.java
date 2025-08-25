@@ -20,7 +20,7 @@ public class KeycloakSecurityUtil {
     @Value("${keycloak.config.client-id}")
     private String clientId;
 
-    @Value("${keycloak.config.grant-typel}")
+    @Value("${keycloak.config.grant-type}")
     private String grantType;
 
     @Value("${keycloak.config.name}")
