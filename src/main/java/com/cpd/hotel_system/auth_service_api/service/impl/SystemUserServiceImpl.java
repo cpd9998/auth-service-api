@@ -69,6 +69,7 @@ public class SystemUserServiceImpl implements SystemUserService {
                 Optional<Otp> selectedOtp = otpRepo.findBySystemUserId(selectedSystemUserFromAuthService.get().getUserId());
 
                 if(selectedOtp.isPresent()){
+                    // remove otp
                otpRepo.deleteById(selectedOtp.get().getPropertyId());
                 }
 
