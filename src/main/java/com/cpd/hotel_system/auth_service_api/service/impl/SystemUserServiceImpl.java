@@ -132,7 +132,7 @@ public class SystemUserServiceImpl implements SystemUserService {
     }
 
     @Override
-    public void initilizeHosts(ArrayList<SystemUserRequestDto> users) throws IOException {
+    public void initilizeHosts(List<SystemUserRequestDto> users) throws IOException {
       for(SystemUserRequestDto dto : users){
           Optional<SystemUser> selectedUser = systemUserRepo.findByEmail(dto.getEmail());
 
