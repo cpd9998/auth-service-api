@@ -14,6 +14,7 @@ public interface SystemUserService {
     public void forgotPasswordSendVerificationCode(String email);
     public boolean verifyReset(String otp,String email);
     public boolean passwordReset(PasswordRequestDto dto);
+    public boolean verifyEmail(String otp,String email);
 
 
 }
