@@ -5,5 +5,6 @@ import java.io.IOException;
 public interface EmailService {
 
     public  boolean sendUserSignupVerficationCode(String toEmail,String subject,String otp,String firstName) throws IOException;
+    public  boolean sendHostPassword(String toEmail,String subject,String otp,String firstName) throws IOException;
 
 }
