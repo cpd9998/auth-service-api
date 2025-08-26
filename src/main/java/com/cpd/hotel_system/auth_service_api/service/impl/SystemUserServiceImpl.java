@@ -241,6 +241,39 @@ public class SystemUserServiceImpl implements SystemUserService {
         }
     }
 
+    @Override
+    public void forgotPasswordSendVerificationCode(String email) {
+        try{
+            Optional<SystemUser> selectedUser = systemUserRepo.findByEmail(email);
+            if(selectedUser.isEmpty()){
+                throw new EntryNotFoundException("Unable to find any user associated with this email ");
+            }
+            SystemUser systemUser = selectedUser.get();
+            Keycloak keycloak = null;
+            keycloak = keycloakUtil.getKeycloakInstance();
+            UserRepresentation exsistingUser = keycloak.realm(realm).users().search(email).stream().findFirst().orElse(null);
+            if(exsistingUser == null){
+                throw new EntryNotFoundException("Unable to find any user associated with this email ");
+            }
+
+            Otp selectedOtpobj = systemUser.getOtp();
+            if(selectedOtpobj.getAttempts() >=5){
+                String code =otpGenerator.generateOtp(5);
+                selectedOtpobj.setAttempts(0);
+                selectedOtpobj.setCode(code);
+                selectedOtpobj.setIsVerified(false);
+                selectedOtpobj.setUpdatedAt(new Date().toInstant());
+                otpRepo.save(selectedOtpobj);
+                emailService.sendUserSignupVerficationCode(systemUser.getEmail(),"Verify your email",code,systemUser.getFirstName());
+
+            }
+
+
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     private  UserRepresentation mapUserRepo(SystemUserRequestDto dto,boolean isEmailVerified,boolean isEnabled ){
         UserRepresentation user = new UserRepresentation();
         user.setEmail(dto.getEmail());

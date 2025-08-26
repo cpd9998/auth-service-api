@@ -10,6 +10,7 @@ public interface SystemUserService {
     public void createUser(SystemUserRequestDto dto) throws IOException;
     public void initilizeHosts(List<SystemUserRequestDto> users) throws IOException;
     public void resend(String email,String type);
+    public void forgotPasswordSendVerificationCode(String email);
 
 
 }
