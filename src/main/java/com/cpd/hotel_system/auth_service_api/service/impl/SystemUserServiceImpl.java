@@ -285,7 +285,12 @@ public class SystemUserServiceImpl implements SystemUserService {
             SystemUser systemUserOb = selectedUser.get();
             Otp otpOb = systemUserOb.getOtp();
             if(otpOb.getCode().equals(otp)){
-                otpRepo.deleteById(otpOb.getPropertyId());
+               // otpRepo.deleteById(otpOb.getPropertyId());
+                otpOb.setAttempts(otpOb.getAttempts() + 1);
+                otpOb.setUpdatedAt(new Date().toInstant());
+                otpOb.setIsVerified(true);
+                otpRepo.save(otpOb);
+
                 return true;
             }else{
                 if(otpOb.getAttempts() >=5){
