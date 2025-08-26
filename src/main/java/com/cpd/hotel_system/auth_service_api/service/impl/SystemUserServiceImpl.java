@@ -1,5 +1,6 @@
 package com.cpd.hotel_system.auth_service_api.service.impl;
 
+import com.cpd.hotel_system.auth_service_api.dto.request.PasswordRequestDto;
 import com.cpd.hotel_system.auth_service_api.entity.Otp;
 import com.cpd.hotel_system.auth_service_api.exception.BadRequestException;
 import com.cpd.hotel_system.auth_service_api.config.KeycloakSecurityUtil;
@@ -16,6 +17,7 @@ import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -275,7 +277,7 @@ public class SystemUserServiceImpl implements SystemUserService {
     }
 
     @Override
-    public boolean verifyRest(String otp, String email) {
+    public boolean verifyReset(String otp, String email) {
 
         try{
             Optional<SystemUser> selectedUser = systemUserRepo.findByEmail(email);
@@ -308,6 +310,36 @@ public class SystemUserServiceImpl implements SystemUserService {
             return false;
         }
 
+    }
+
+    @Override
+    public boolean passwordReset(PasswordRequestDto dto) {
+
+        Optional<SystemUser> selectedUserObj = systemUserRepo.findByEmail(dto.getEmail());
+        if(selectedUserObj.isPresent()){
+            SystemUser systemUser = selectedUserObj.get();
+            Otp otpobj =systemUser.getOtp();
+            Keycloak keycloak = keycloakUtil.getKeycloakInstance();
+            List<UserRepresentation> keyCloakUsers =  keycloak.realm(realm).users().search(systemUser.getEmail());
+            if(!keyCloakUsers.isEmpty() &&  otpobj.getCode().equals(dto.getCode()) ){
+                 UserRepresentation keyCloakuser =keyCloakUsers.get(0);
+                 UserResource userResource = keycloak.realm(realm).users().get(keyCloakuser.getId());
+                 CredentialRepresentation newPass = new CredentialRepresentation();
+                 newPass.setType(CredentialRepresentation.PASSWORD);
+                 newPass.setValue(dto.getPassword());
+                 newPass.setTemporary(false);
+                 userResource.resetPassword(newPass);
+                 systemUser.setUpdatedAt(new Date().toInstant());
+                 systemUserRepo.save(systemUser);
+                 return  true;
+
+            }
+
+            throw new BadRequestException("Try again");
+
+
+        }
+       throw new EntryNotFoundException("Unable to find any user associated with this email ");
     }
 
     private  UserRepresentation mapUserRepo(SystemUserRequestDto dto,boolean isEmailVerified,boolean isEnabled ){
