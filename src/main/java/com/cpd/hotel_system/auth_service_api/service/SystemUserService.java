@@ -9,5 +9,7 @@ import java.util.List;
 public interface SystemUserService {
     public void createUser(SystemUserRequestDto dto) throws IOException;
     public void initilizeHosts(List<SystemUserRequestDto> users) throws IOException;
+    public void resend(String email,String type);
+
 
 }

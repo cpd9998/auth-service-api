@@ -6,6 +6,7 @@ import com.cpd.hotel_system.auth_service_api.config.KeycloakSecurityUtil;
 import com.cpd.hotel_system.auth_service_api.dto.request.SystemUserRequestDto;
 import com.cpd.hotel_system.auth_service_api.entity.SystemUser;
 import com.cpd.hotel_system.auth_service_api.exception.DuplicateEntryException;
+import com.cpd.hotel_system.auth_service_api.exception.EntryNotFoundException;
 import com.cpd.hotel_system.auth_service_api.repo.OtpRepo;
 import com.cpd.hotel_system.auth_service_api.repo.SystemUserRepo;
 import com.cpd.hotel_system.auth_service_api.service.EmailService;
@@ -205,6 +206,39 @@ public class SystemUserServiceImpl implements SystemUserService {
           }
 
       }
+    }
+
+    @Override
+    public void resend(String email,String type) {
+        try{
+            Optional<SystemUser> selectedUser = systemUserRepo.findByEmail(email);
+            if(selectedUser.isEmpty()){
+                throw new EntryNotFoundException("Unable to find any user associated with this email ");
+            }
+            SystemUser systemUser = selectedUser.get();
+            if(type.equalsIgnoreCase("SIGNUP")){
+
+                if(systemUser.isEmailVerified()){
+                    throw new DuplicateEntryException("This email is already activated");
+                }
+            }
+
+            Otp selectedOtpobj = systemUser.getOtp();
+            if(selectedOtpobj.getAttempts() >=5){
+                String code =otpGenerator.generateOtp(5);
+                emailService.sendUserSignupVerficationCode(systemUser.getEmail(),"Verify your email",code,systemUser.getFirstName());
+                selectedOtpobj.setAttempts(0);
+                selectedOtpobj.setCode(code);
+                selectedOtpobj.setIsVerified(false);
+                selectedOtpobj.setUpdatedAt(new Date().toInstant());
+                otpRepo.save(selectedOtpobj);
+
+            }
+
+
+        }catch (Exception e){
+        throw new RuntimeException(e.getMessage());
+        }
     }
 
     private  UserRepresentation mapUserRepo(SystemUserRequestDto dto,boolean isEmailVerified,boolean isEnabled ){
