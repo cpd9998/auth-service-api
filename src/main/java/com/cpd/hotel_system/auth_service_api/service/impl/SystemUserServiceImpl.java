@@ -274,6 +274,37 @@ public class SystemUserServiceImpl implements SystemUserService {
         }
     }
 
+    @Override
+    public boolean verifyRest(String otp, String email) {
+
+        try{
+            Optional<SystemUser> selectedUser = systemUserRepo.findByEmail(email);
+            if(selectedUser.isEmpty()){
+                throw new EntryNotFoundException("Unable to find any user associated with this email ");
+            }
+            SystemUser systemUserOb = selectedUser.get();
+            Otp otpOb = systemUserOb.getOtp();
+            if(otpOb.getCode().equals(otp)){
+                otpRepo.deleteById(otpOb.getPropertyId());
+                return true;
+            }else{
+                if(otpOb.getAttempts() >=5){
+                    resend(email,"PASSWORD");
+                    throw new BadRequestException("you have a new verification code ");
+
+                }
+                otpOb.setAttempts(otpOb.getAttempts() + 1);
+                otpOb.setUpdatedAt(new Date().toInstant());
+                otpRepo.save(otpOb);
+                return false;
+
+            }
+        }catch (Exception e){
+            return false;
+        }
+
+    }
+
     private  UserRepresentation mapUserRepo(SystemUserRequestDto dto,boolean isEmailVerified,boolean isEnabled ){
         UserRepresentation user = new UserRepresentation();
         user.setEmail(dto.getEmail());

@@ -11,6 +11,7 @@ public interface SystemUserService {
     public void initilizeHosts(List<SystemUserRequestDto> users) throws IOException;
     public void resend(String email,String type);
     public void forgotPasswordSendVerificationCode(String email);
+    public boolean verifyRest(String otp,String email);
 
 
 }
