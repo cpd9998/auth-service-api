@@ -2,6 +2,7 @@ package com.cpd.hotel_system.auth_service_api.api;
 
 import com.cpd.hotel_system.auth_service_api.config.JwtService;
 import com.cpd.hotel_system.auth_service_api.dto.request.PasswordRequestDto;
+import com.cpd.hotel_system.auth_service_api.dto.request.RequestLoginDto;
 import com.cpd.hotel_system.auth_service_api.dto.request.SystemUserRequestDto;
 import com.cpd.hotel_system.auth_service_api.service.SystemUserService;
 import com.cpd.hotel_system.auth_service_api.util.StandardResponseDto;
@@ -57,5 +58,20 @@ public class UserController {
         boolean isChanged = systemUserService.passwordReset(dto);
         return new ResponseEntity<>(new StandardResponseDto(isChanged?201:400,isChanged?"password changed":"try again",isChanged), isChanged?HttpStatus.CREATED:HttpStatus.BAD_REQUEST);
     }
+
+    @PostMapping("/visitors/verify-email")
+    public ResponseEntity<StandardResponseDto> verifyEmail(@RequestParam String email,@RequestParam String otp) throws IOException {
+
+        boolean isVerified = systemUserService.verifyReset(otp,email);
+        return new ResponseEntity<>(new StandardResponseDto(isVerified?200:400,isVerified?"verified":"try again",isVerified), isVerified?HttpStatus.OK:HttpStatus.BAD_REQUEST);
+    }
+
+
+    @PostMapping("/visitors/login")
+    public ResponseEntity<StandardResponseDto> login(@RequestBody RequestLoginDto dto) throws IOException {
+        return new ResponseEntity<>(new StandardResponseDto(200,"success",systemUserService.userLogin(dto)), HttpStatus.OK);
+    }
+
+
 
 }
