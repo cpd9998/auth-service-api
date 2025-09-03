@@ -23,12 +23,12 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.authorizeHttpRequests(authorize ->{
             authorize
-                    .requestMatchers(HttpMethod.POST, "user-service/api/v1/visitors/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "user-service/api/v1/users/visitors/**").permitAll()
                     .anyRequest().authenticated();
         });
 
         http.oauth2ResourceServer(t->{
-            t.jwt(jwtConfigurer ->  jwtConfigurer.jwtAuthenticationConverter((authConverter)))
+            t.jwt(jwtConfigurer ->  jwtConfigurer.jwtAuthenticationConverter((authConverter)));
         });
         http.sessionManagement(t->t.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
