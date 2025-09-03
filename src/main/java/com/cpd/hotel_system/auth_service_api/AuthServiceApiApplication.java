@@ -25,7 +25,6 @@ public class AuthServiceApiApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		SystemUserRequestDto user1 = new SystemUserRequestDto("Abc","Xyz","abc@gmail.com",generator.generatePassword(),"0778336188");
 		SystemUserRequestDto user2 = new SystemUserRequestDto("STY","WTY","sty@gmail.com",generator.generatePassword(),"0778626994");
-		service.initilizeHosts(null);
 		service.initilizeHosts(Arrays.asList(user1,user2));
 
 	}

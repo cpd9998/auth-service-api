@@ -193,7 +193,7 @@ public class SystemUserServiceImpl implements SystemUserService {
           Response response = keycloak.realm(realm).users().create(userRepresentation);
           if(response.getStatus() == Response.Status.CREATED.getStatusCode()){
               RoleRepresentation userRole = keycloak.realm(realm).roles().get("host").toRepresentation();
-              userId =  response.getLocation().getPath().replaceAll(".*/([^/])+$","$1");
+              userId =  response.getLocation().getPath().replaceAll(".*/([^/]+)+$","$1");
               keycloak.realm(realm).users().get(userId).roles().realmLevel().add(Arrays.asList(userRole));
               UserRepresentation createdUser = keycloak.realm(realm).users().get(userId).toRepresentation();
               SystemUser sUser = SystemUser.builder()
